@@ -19,8 +19,8 @@ def verify_webhook():
 @webhook_bp.route("/webhook", methods=["POST"])
 def handle_message():
     """Handles incoming WhatsApp messages and classifies them"""
-    data = request.json
-
+    data = request.get_json()
+    print("Received WhatsApp Message:", data)
     if data.get("object") == "whatsapp_business_account":
         for entry in data.get("entry", []):
             for change in entry.get("changes", []):
