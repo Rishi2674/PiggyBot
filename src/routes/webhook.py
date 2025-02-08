@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-# from src.llm.classifier import classify_message
+from src.llm.classifier import classify_message
 from config.config import VERIFY_TOKEN
 
 webhook_bp = Blueprint("webhook", __name__)
@@ -38,14 +38,8 @@ def handle_message():
 
                     print(f"User {user_name} ({user_id}) sent: {user_text}")  # Debugging
 
-                    # Send message to LLM for classification
-                    # category = classify_message(user_text, user_name)
-
-                    # print(f"Classified as: {category}")  # Debugging
-
-                    # response_text = f"Hello {user_name}, your message is classified as: {category}"
-
-                    # return jsonify({"message": response_text}), 200
-                    return jsonify({"message": "success"}), 200
+                    category = classify_message(user_text=user_text)
+                    response_text = f"Hello {user_name}, your message is classified as: {category}"
+                    return jsonify({"message": response_text}), 200
 
     return "OK", 200

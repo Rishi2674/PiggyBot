@@ -1,5 +1,4 @@
 from flask import Flask
-# from config.config import VERIFY_TOKEN  # Import configuration variables
 from src.api.webhook import webhook_bp  # Import your webhook Blueprint
 
 def create_app():
