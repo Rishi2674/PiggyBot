@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: PiggyBot
+    env: python
+    repo: https://github.com/Rishi2674/PiggyBot
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -b 0.0.0.0:$PORT app:app
+    envVars:
+      - key: PORT
+        value: 5000
