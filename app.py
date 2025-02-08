@@ -1,35 +1,20 @@
-from flask import Flask, request, jsonify
-import os
-from dotenv import load_dotenv
+from flask import Flask
+# from config.config import VERIFY_TOKEN  # Import configuration variables
+from src.api.webhook import webhook_bp  # Import your webhook Blueprint
 
-load_dotenv()
-
-app = Flask(__name__)
-
-VERIFY_TOKEN = os.getenv("VERIFY_TOKEN")
-
-@app.route('/')
-def home():
-    return "Welcome to PiggyBot!"
-
-@app.route('/webhook', methods=['GET', 'POST'])
-def webhook():
-    if request.method == 'GET':
-        # Verification Step for WhatsApp API
-        
-        challenge = request.args.get("hub.challenge")
-        token = request.args.get("hub.verify_token")
-        print(token)
-
-        if token == VERIFY_TOKEN:
-            return challenge
-        return "Verification failed", 403
-
-    elif request.method == 'POST':
-        # Handling incoming WhatsApp messages
-        data = request.get_json()
-        print("Received WhatsApp Message:", data)
-        return jsonify({"status": "received"}), 200
+def create_app():
+    app = Flask(__name__)  # Initialize Flask app
+    
+    # Load configurations (if you have more settings later)
+    # app.config.from_object("config.config")  
+    # print(VERIFY_TOKEN)
+    
+    # Register Blueprints
+    print("import from src works!")
+    app.register_blueprint(webhook_bp, url_prefix="/webhook")
+    
+    return app
 
 if __name__ == "__main__":
-    app.run(debug=True, port=10000)
+    app = create_app()
+    app.run(host="0.0.0.0", port=5000, debug=True)
