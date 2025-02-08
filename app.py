@@ -1,6 +1,12 @@
 from flask import Flask, request, jsonify
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
+
+VERIFY_TOKEN = os.getenv("VERIFY_TOKEN")
 
 @app.route('/')
 def home():
@@ -10,11 +16,12 @@ def home():
 def webhook():
     if request.method == 'GET':
         # Verification Step for WhatsApp API
-        verify_token = "your_verify_token"
+        
         challenge = request.args.get("hub.challenge")
         token = request.args.get("hub.verify_token")
+        print(token)
 
-        if token == verify_token:
+        if token == VERIFY_TOKEN:
             return challenge
         return "Verification failed", 403
 
@@ -25,4 +32,4 @@ def webhook():
         return jsonify({"status": "received"}), 200
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=10000)
