@@ -4,19 +4,21 @@ from config.config import VERIFY_TOKEN
 
 webhook_bp = Blueprint("webhook", __name__)
 
-@webhook_bp.route("/webhook", methods=["GET"])
+@webhook_bp.route("/", methods=["GET"])
 def verify_webhook():
     """Handles the webhook verification process"""
     mode = request.args.get("hub.mode")
     token = request.args.get("hub.verify_token")
     challenge = request.args.get("hub.challenge")
+    print("Verification Token: ", VERIFY_TOKEN )
+    print("Received Token: ", token)
 
     if mode == "subscribe" and token == VERIFY_TOKEN:
         return challenge, 200
     else:
         return "Forbidden", 403
 
-@webhook_bp.route("/webhook", methods=["POST"])
+@webhook_bp.route("/", methods=["POST"])
 def handle_message():
     """Handles incoming WhatsApp messages and classifies them"""
     print("hello from handle_messages()")
