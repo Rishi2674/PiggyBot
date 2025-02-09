@@ -4,7 +4,8 @@ from src.llm.expense_extraction import extract_expense_details
 from db.operations import store_expense
 from config.config import VERIFY_TOKEN
 from db.init import db 
-import datetime
+from src.llm.response_generator import generate_response
+from src.routes.whatsapp_sender import send_whatsapp_text_message
 
 webhook_bp = Blueprint("webhook", __name__)
 
@@ -72,8 +73,19 @@ def handle_message():
                         # print("Expense Data: " ,expense_data)
                         if expense_data:
                             # print("Expense data extracted")
-                            result = store_expense(expense_data)  # Call the new function
-                            return jsonify(result), 201 if "message" in result else 500  # 500 for DB errors
+                            result = store_expense(expense_data)  # Call the function
+                            result = jsonify(result)  # Convert result to a Response object
+
+                            print(result)  # Debugging: Print response object
+
+                            if "message" in result.get_json():  # Extract JSON before checking
+                                response_text = generate_response(user_input=user_text, context="db-success")
+                                print(response_text)
+                                send_whatsapp_text_message(recipient_phone_number=user_id, message_text=response_text)
+                                return jsonify({"message": response_text}), 200
+                            else:
+                                return jsonify({"error": "Failed to store expense details"}), 400
+
                         else:
                             return jsonify({"error": "Failed to extract expense details"}), 400  # 400 for extraction failure
 

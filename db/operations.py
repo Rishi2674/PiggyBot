@@ -31,6 +31,7 @@ def store_expense(expense_data):
         result =  expenses_collection.insert_one(expense_data)
         # print("result:",result)
         expense_data["_id"] = str(result.inserted_id)
+        print("Data stored successfully")
         return {"message": "Expense recorded successfully", "data": expense_data}
     except Exception as e:
         print(f"❌ Database insertion failed: {str(e)}")
