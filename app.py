@@ -1,5 +1,6 @@
 from flask import Flask
-from src.api.webhook import webhook_bp  # Import your webhook Blueprint
+from src.routes.webhook import webhook_bp 
+from db.init import init_db
 
 def create_app():
     app = Flask(__name__)  # Initialize Flask app
@@ -7,6 +8,7 @@ def create_app():
     # Load configurations (if you have more settings later)
     # app.config.from_object("config.config")  
     # print(VERIFY_TOKEN)
+    init_db()  # Initialize MongoDB connection
     
     # Register Blueprints
     print("import from src works!")

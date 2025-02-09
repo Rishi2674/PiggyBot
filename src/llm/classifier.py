@@ -37,3 +37,4 @@ def classify_message(user_text):
         print("Error communicating with Ollama:", str(e))
         return "Error"
 
+print(classify_message("Spent 1000 on coffee."))
