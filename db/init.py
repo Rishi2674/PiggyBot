@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from config.config import MONGODB_URI
 
-# Global variables for MongoDB connection and collections
+# Global variables
 client = None
 db = None
 users_collection = None
@@ -14,29 +14,36 @@ def init_db():
     print("🔄 Attempting to connect to MongoDB...")
 
     try:
-        # Connect to MongoDB
         client = MongoClient(MONGODB_URI)
         db = client["Cluster0"]  
 
-        # Define collections
+        # Debug: Check if database is correctly assigned
+        if db is None:
+            print("❌ Database not assigned!")
+            return
+        
+        # Assign collections
         users_collection = db["users"]
         expenses_collection = db["expenses"]
         queries_collection = db["queries"]
 
-        # Verify connection
+        # Debugging logs
+        # print(f"📌 db: {db}")
+        # print(f"📌 users_collection: {users_collection}")
+        # print(f"📌 expenses_collection: {expenses_collection}")
+        # print(f"📌 queries_collection: {queries_collection}")
+
+        if expenses_collection is None:
+            print("❌ ERROR: expenses_collection was not assigned correctly!")
+
         print("✅ Successfully connected to MongoDB!")
 
-        # Insert test data to create collections if they don’t exist
-        # users_collection.insert_one({"test": "user_created"})
-        # expenses_collection.insert_one({"test": "expense_created"})
-        # queries_collection.insert_one({"test": "query_created"})
-
-        # print("📌 Inserted test documents to force collection creation.") 
-
-        # Check existing collections
+        # Verify collections exist
         collections = db.list_collection_names()
-        print(f"📁 Available collections in 'Cluster0' database: {collections}")
+        print(f"📁 Available collections: {collections}")
 
     except Exception as e:
         print(f"❌ Error connecting to MongoDB: {e}")
 
+# ✅ Run function immediately when imported
+init_db()

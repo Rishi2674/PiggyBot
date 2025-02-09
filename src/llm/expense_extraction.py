@@ -1,9 +1,12 @@
 import requests
 from datetime import datetime
-
-OLLAMA_URL = "http://localhost:11434/api/generate"
+from google import genai
+from config.config import GEMINI_API_KEY
+# OLLAMA_URL = "http://localhost:11434/api/generate"
 
 def extract_expense_details(user_text, user_id):
+    print("in extract_expense_details")
+    client = genai.Client(api_key=GEMINI_API_KEY)
     prompt = f"""
     You are an intelligent assistant for an expense tracker bot. Extract structured expense details from the given message.
     
@@ -43,22 +46,29 @@ def extract_expense_details(user_text, user_id):
     Message: "{user_text}"
     Output:
     """
+    
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=prompt,
+        )
+    print(response.text)
+    return response.text
 
-    payload = {
-        "model": "phi3",
-        "prompt": prompt,
-        "stream": False
-    }
+    # payload = {
+    #     "model": "phi3",
+    #     "prompt": prompt,
+    #     "stream": False
+    # }
 
-    try:
-        response = requests.post(OLLAMA_URL, json=payload)
-        response_json = response.json()
-        extracted_data = response_json.get("response", "{}").strip()
-        print("Extracted Expense Data:", extracted_data)
-        print("---------------Done------------------")
-        return extracted_data
+    # try:
+    #     response = requests.post(OLLAMA_URL, json=payload)
+    #     response_json = response.json()
+    #     extracted_data = response_json.get("response", "{}").strip()
+    #     print("Extracted Expense Data:", extracted_data)
+    #     print("---------------Done------------------")
+    #     return extracted_data
 
-    except Exception as e:
-        print("Error communicating with Ollama:", str(e))
-        return "{}"
+    # except Exception as e:
+    #     print("Error communicating with Ollama:", str(e))
+    #     return "{}"
 

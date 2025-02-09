@@ -62,11 +62,16 @@ def handle_message():
 
                     category = classify_message(user_text=user_text)
                     response_text = f"Hello {user_name}, your message is classified as: {category}"
-
+                    print(response_text)
+                    # print(category.lower())
+                    # print(category.lower()=="expense")
+                    
                     if category.lower() == "expense":   # Case-insensitive check
+                        # print("Expense detected")
                         expense_data = extract_expense_details(user_text, user_id)  
-                        print(expense_data)
+                        # print("Expense Data: " ,expense_data)
                         if expense_data:
+                            # print("Expense data extracted")
                             result = store_expense(expense_data)  # Call the new function
                             return jsonify(result), 201 if "message" in result else 500  # 500 for DB errors
                         else:

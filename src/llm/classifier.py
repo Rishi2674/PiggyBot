@@ -1,9 +1,15 @@
-import requests
+import ollama
+# import requests
+from google import genai
+import time
+from config.config import GEMINI_API_KEY
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 
+
 def classify_message(user_text):
-    
+    print("in classification messsages")
+    client = genai.Client(api_key=GEMINI_API_KEY)
 
     prompt = f"""
     You are an intelligent assistant for an expense tracker bot. 
@@ -13,28 +19,61 @@ def classify_message(user_text):
     
     Message: "{user_text}"
     
-    Respond strictly with one word either 'Expense' or 'Query'. No further explanation is needed, just one word.
+    Respond ONLY with 'Expense' or 'Query'. NO explanations, NO extra text.
     """
 
-    payload = {
-        "model": "phi3",
-        "prompt": prompt,
-        "stream": False
-    }
+    # payload = {
+    #     "model": "phi3",
+    #     "prompt": prompt,
+    #     "stream": False,
+    #     "options": {
+    #         "temperature": 0,
+    #         "max_tokens": 15,
+    #     }
+    # }
+    
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=prompt,
+        )
+    print("classification output: ",response.text)
+    return response.text.strip().split("\n")[0]
 
-    try:
-        response = requests.post(OLLAMA_URL, json=payload)
-        response_json = response.json()
-        classified_intent = response_json.get("response", "").strip()
-        print("classified intent: ", classified_intent)
-        print("---------------Done------------------")
-        if classified_intent not in ["Expense", "Query"]:
-            return "Unknown"
+    # print(response.text)
+    # response = ollama.generate(
+    #     model="phi3",
+    #     prompt=prompt,
+    #     options={
+    #         "temperature": 0,
+    #         "max_tokens": 1,
+    #         "num_ctx": 512,
+    #         "num_gqa": 1
+    #     }
+    # )
+    
+    # return response["response"].strip().split()[0]   
 
-        return classified_intent
+    # try:
+    #     response = requests.post(OLLAMA_URL, json=payload)
+    #     print("response: ", response)
+    #     response_json = response.json()
+    #     classified_intent = response_json.get("response", "").strip()
+    #     print("classified intent: ", classified_intent)
+    #     print("---------------Done------------------")
+    #     if classified_intent not in ["Expense", "Query"]:
+    #         return "Unknown"
 
-    except Exception as e:
-        print("Error communicating with Ollama:", str(e))
-        return "Error"
+    #     return classified_intent
 
-print(classify_message("Spent 1000 on coffee."))
+    # except Exception as e:
+    #     print("Error communicating with Ollama:", str(e))
+    #     return "Error"
+
+# import time
+
+# start = time.time()
+# response = classify_message("What was my expense last week?")
+# end = time.time()
+
+# print("Response:", response)
+# print("Time taken:", end - start, "seconds")
