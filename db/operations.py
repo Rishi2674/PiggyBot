@@ -8,7 +8,7 @@ def store_expense(expense_data):
     # ✅ Convert JSON string to dictionary if necessary
     cleaned_text = re.sub(r"```json|```", "", expense_data).strip()
     cleaned_text = cleaned_text.replace("\n","")
-    cleaned_text = cleaned_text.replace(" ","")
+    cleaned_text = cleaned_text.lstrip()
     print("cleaned_text:",cleaned_text)
     if isinstance(cleaned_text, str):  
         try:
