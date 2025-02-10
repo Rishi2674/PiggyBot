@@ -1,12 +1,9 @@
-from flask import Blueprint, request, jsonify
-from src.llm.classifier import classify_message
-from src.llm.expense_extraction import extract_expense_details
-from db.operations import store_expense, execute_mongo_query
+from flask import Blueprint, request, jsonify,Response
 from config.config import VERIFY_TOKEN
-from db.init import db 
-from src.llm.response_generator import generate_response
-from src.routes.whatsapp_sender import send_whatsapp_text_message
-from src.llm.generate_mongo_query import generate_mongo_query
+from src.routes.handle_user_message import handle_user_message
+
+
+PROCESSED_MESSAGES = set()
 
 webhook_bp = Blueprint("webhook", __name__)
 
@@ -28,7 +25,19 @@ def verify_webhook():
 def handle_message():
     """Handles incoming WhatsApp messages and classifies them"""
     data = request.get_json()
+    
     print("Received WhatsApp Message:", data)
+    message = data["entry"][0]["changes"][0]["value"].get("messages", [None])[0]
+    if not message:
+        return jsonify({"status": "no_message"}), 200
+    message_id = message["id"]
+    if message_id in PROCESSED_MESSAGES:
+        print("ℹ️ Message already processed, skipping.")
+        return jsonify({"status": "duplicate"}), 200
+
+    PROCESSED_MESSAGES.add(message_id)
+    response = jsonify({"status": "success"})
+    response.status_code = 200
     
     if data.get("object") == "whatsapp_business_account":
         for entry in data.get("entry", []):
@@ -55,38 +64,48 @@ def handle_message():
                     
                     print(f"📩 User {user_name} ({user_id}) sent: {user_text}")
                     
-                    category = classify_message(user_text=user_text)
-                    response_text = f"Hello {user_name}, your message is classified as: {category}"
+                    results = handle_user_message(user_text=user_text, user_id=user_id, user_name=user_name)
                     
-                    if category.lower() == "expense":
-                        expense_data = extract_expense_details(user_text, user_id)
+                    # category = classify_message(user_text=user_text)
+                    # response_text = f"Hello {user_name}, your message is classified as: {category}"
+                    
+                    # if category.lower() == "expense":
+                    #     expense_data = extract_expense_details(user_text, user_id)
                         
-                        if expense_data:
-                            result = store_expense(expense_data)
+                    #     if expense_data:
+                    #         result = store_expense(expense_data)
                             
-                            if "message" in result:
-                                response_text = generate_response(user_input=user_text, context="db-success")
-                                send_whatsapp_text_message(recipient_phone_number=user_id, message_text=response_text)
-                                return jsonify({"message": response_text}), 200
-                            else:
-                                return jsonify({"error": "Failed to store expense details"}), 400
-                        else:
-                            return jsonify({"error": "Failed to extract expense details"}), 400
+                    #         if "message" in result:
+                    #             response_text = generate_response(user_input=user_text, context="db-success")
+                    #             send_whatsapp_text_message(recipient_phone_number=user_id, message_text=response_text)
+                    #             return jsonify({"message": response_text}), 200
+                    #         else:
+                    #             return jsonify({"error": "Failed to store expense details"}), 400
+                    #     else:
+                    #         return jsonify({"error": "Failed to extract expense details"}), 400
                     
-                    elif category.lower() == "query":
-                        print("🟢 Query detected")
-                        mongo_db_query = generate_mongo_query(user_query=user_text, user_id=user_id)
-                        print("mongo_db_query: ",mongo_db_query)
-                        if mongo_db_query:
-                            results = execute_mongo_query(user_id=user_id, mongo_query=mongo_db_query)
-                            print("results: ",results)
-                            response_text = generate_response(user_input=results, context="query_response")
-                            send_whatsapp_text_message(recipient_phone_number=user_id, message_text=response_text)
-                            # return jsonify({"message": "Sucesss"}), 200
-                            return 200
+                    # elif category.lower() == "query":
+                    #     print("🟢 Query detected")
+                    #     mongo_db_query = generate_mongo_query(user_query=user_text, user_id=user_id)
+                    #     print("mongo_db_query: ",mongo_db_query)
+                    #     if mongo_db_query:
+                    #         results = execute_mongo_query(user_id=user_id, mongo_query=mongo_db_query)
+                    #         print("results: ",results)
+                    #         response_text = generate_response(user_input=results, context="query_response")
+                    #         send_whatsapp_text_message(recipient_phone_number=user_id, message_text=response_text)
+                    #         # return jsonify({"message": "Sucesss"}), 200
+                    #         return 200
                     
-                    return jsonify({"message": response_text}), 200
+                    # elif category.lower() == "none":
+                    #     response_text = generate_response(user_input=user_text, context="general")
+                    #     send_whatsapp_text_message(recipient_phone_number=user_id, message_text=response_text)
+                    #     return jsonify({"message": "random message sent"}), 200
+                    
+                    if isinstance(results, Response):
+                        return results  # Directly return Flask Response objects
+                    else:
+                        return jsonify({"message": str(results)}), 200
     
-    return "OK", 200
+    return response
 
 

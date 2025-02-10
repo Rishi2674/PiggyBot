@@ -2,7 +2,7 @@ from google import genai
 from config.config import GEMINI_API_KEY
 import json
 
-def generate_response(user_input, context="general"):
+def generate_response(user_input, context="general",user_name="User"):
     """
     Sends user input to Gemini API and returns a response.
     
@@ -18,11 +18,12 @@ def generate_response(user_input, context="general"):
         prompt = ""
         if context == "general":
             prompt = f"""
-            You are an intelligent assistant for an expense tracker bot. 
+            You are an intelligent assistant for an expense tracker bot called "PiggyBot" . 
             Generate a response for the given user input.
             Answer strictly in a single line.
             
             Message: "{user_input}"
+            User_Name: "{user_name}"
             
             """
         elif context == "db-success":
@@ -35,7 +36,7 @@ def generate_response(user_input, context="general"):
             
             # """
             
-            return "The following expense details have been successfully added to the database!"
+            return f"Thank you {user_name}! The following expense details have been successfully added to the database!"
         elif context == "query_response":
             
             user_input = str(user_input)
@@ -62,7 +63,7 @@ def generate_response(user_input, context="general"):
                 5. Make it time-aware (e.g., "Yesterday", "Last month", "On January 15").
 
                 
-
+            User_Name = "{user_name}"
             Query result : 
             {user_input}
             """
