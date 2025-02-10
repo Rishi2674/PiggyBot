@@ -15,7 +15,7 @@ def verify_webhook():
     mode = request.args.get("hub.mode")
     token = request.args.get("hub.verify_token")
     challenge = request.args.get("hub.challenge")
-    print("Verification Token: ", VERIFY_TOKEN )
+    print("Verification Token: ", VERIFY_TOKEN)
     print("Received Token: ", token)
 
     if mode == "subscribe" and token == VERIFY_TOKEN:
@@ -26,73 +26,56 @@ def verify_webhook():
 @webhook_bp.route("/", methods=["POST"])
 def handle_message():
     """Handles incoming WhatsApp messages and classifies them"""
-    # print("hello from handle_messages()")
-    # user_text = "I spent Rs. 500 on coffee"  # Debugging
-    # user_id = "919876543210"
     data = request.get_json()
     print("Received WhatsApp Message:", data)
+    
     if data.get("object") == "whatsapp_business_account":
         for entry in data.get("entry", []):
             for change in entry.get("changes", []):
                 value = change.get("value", {})
-                message = value.get("messages", [])[0]
-                contact = value.get("contacts", [])[0]
-
-                if message and contact:
+                
+                # Handle message status updates (sent, delivered, read, etc.)
+                if "statuses" in value:
+                    print("ℹ️ Status update received, no processing needed.")
+                    return jsonify({"message": "Status update received"}), 200
+                
+                # Handle incoming messages
+                if "messages" in value:
+                    message = value["messages"][0]
+                    contact = value.get("contacts", [{}])[0]
+                    
                     user_text = message.get("text", {}).get("body", "")
                     user_id = message.get("from", "")
-                    user_name = contact.get("profile", {}).get("name", "User")  # Default to "User" if no name
-
-                      # Debugginggi
+                    user_name = contact.get("profile", {}).get("name", "User")
+                    
                     if not user_text or not user_id:
+                        print("⚠️ Invalid message format received!")
                         return jsonify({"error": "Invalid request"}), 400
                     
-                    # existing_user = db.users_collection.find_one({"user_id": user_id})
-                    # if not existing_user:
-                    #     user_data = {
-                    #         "user_id": user_id,
-                    #         "user_name": user_name or "Unknown",
-                    #         "created_at": datetime.utcnow(),
-                    #         }
-                    #     db.users_collection.insert_one(user_data)
-                    #     print("New user added to the database")
+                    print(f"📩 User {user_name} ({user_id}) sent: {user_text}")
                     
-                    print(f"User {user_name} ({user_id}) sent: {user_text}")  # Debugging
-                    
-                    
-
                     category = classify_message(user_text=user_text)
                     response_text = f"Hello {user_name}, your message is classified as: {category}"
-                    print(response_text)
-                    # print(category.lower())
-                    # print(category.lower()=="expense")
                     
-                    if category.lower() == "expense":   # Case-insensitive check
-                        # print("Expense detected")
-                        expense_data = extract_expense_details(user_text, user_id)  
-                        # print("Expense Data: " ,expense_data)
+                    if category.lower() == "expense":
+                        expense_data = extract_expense_details(user_text, user_id)
+                        
                         if expense_data:
-                            # print("Expense data extracted")
-                            result = store_expense(expense_data)  # Call the function
-                            result = jsonify(result)  # Convert result to a Response object
-
-                            print(result)  # Debugging: Print response object
-
-                            if "message" in result.get_json():  # Extract JSON before checking
+                            result = store_expense(expense_data)
+                            
+                            if "message" in result:
                                 response_text = generate_response(user_input=user_text, context="db-success")
-                                print(response_text)
                                 send_whatsapp_text_message(recipient_phone_number=user_id, message_text=response_text)
                                 return jsonify({"message": response_text}), 200
                             else:
                                 return jsonify({"error": "Failed to store expense details"}), 400
-
                         else:
-                            return jsonify({"error": "Failed to extract expense details"}), 400  # 400 for extraction failure
-
+                            return jsonify({"error": "Failed to extract expense details"}), 400
                     
-                    elif category == 'Query' or category == 'query':
-                        print("Query detected")
-                        
+                    elif category.lower() == "query":
+                        print("🟢 Query detected")
+                        # Handle query-related processing here
+                    
                     return jsonify({"message": response_text}), 200
-
+    
     return "OK", 200

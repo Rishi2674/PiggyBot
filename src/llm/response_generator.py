@@ -25,13 +25,16 @@ def generate_response(user_input, context="general"):
             
             """
         elif context == "db-success":
-            prompt = f"""
-            The following expense details have been successfully added to the database.
-            Generate a success message for the user!.     
-            Answer strictly in a single line.    
-            expense details: "{user_input}"
+            # prompt = f"""
+            # The following expense details have been successfully added to the database.
+            # Generate a success message for the user!.     
+            # Answer strictly in a single line.    
+            # expense details: "{user_input}"
             
-            """
+            
+            # """
+            
+            return "The following expense details have been successfully added to the database!"
         elif context == "query_response":
             prompt = """Hi """
         
