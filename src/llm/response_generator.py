@@ -1,5 +1,6 @@
 from google import genai
 from config.config import GEMINI_API_KEY
+import json
 
 def generate_response(user_input, context="general"):
     """
@@ -36,7 +37,35 @@ def generate_response(user_input, context="general"):
             
             return "The following expense details have been successfully added to the database!"
         elif context == "query_response":
-            prompt = """Hi """
+            
+            user_input = str(user_input)
+            print(type(user_input))
+            prompt = f"""
+                You are an AI assistant that converts structured MongoDB query results into a natural language summary for a user. 
+
+                Input:
+                You will receive an array of expense records in JSON format. Each record has the following fields:
+                - category (string) → The main category of the expense (e.g., "Food", "Transport").
+                - subcategory (optional string) → A more specific type within the category (e.g., "Pizza", "Taxi").
+                - description (optional string) → Additional details about the expense.
+                - amount (float) → The amount spent.
+                - date (ISO datetime) → The date when the expense was recorded.
+                - user_id (string) → The user’s ID (not needed in the response).
+
+                Task:
+                Convert the structured data into a **clear, friendly, and concise natural language response** for the user.  
+                Follow these **guidelines**:
+                1. Summarize the results in a conversational tone.
+                2. Group similar expenses together if applicable.
+                3. Show totals when possible (e.g., "You spent ₹800 on Food in January").
+                4. Use bullet points for readability if multiple expenses exist.
+                5. Make it time-aware (e.g., "Yesterday", "Last month", "On January 15").
+
+                
+
+            Query result : 
+            {user_input}
+            """
         
         response = client.models.generate_content(
             model="gemini-2.0-flash",

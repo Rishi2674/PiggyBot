@@ -1,11 +1,12 @@
 from flask import Blueprint, request, jsonify
 from src.llm.classifier import classify_message
 from src.llm.expense_extraction import extract_expense_details
-from db.operations import store_expense
+from db.operations import store_expense, execute_mongo_query
 from config.config import VERIFY_TOKEN
 from db.init import db 
 from src.llm.response_generator import generate_response
 from src.routes.whatsapp_sender import send_whatsapp_text_message
+from src.llm.generate_mongo_query import generate_mongo_query
 
 webhook_bp = Blueprint("webhook", __name__)
 
@@ -74,8 +75,18 @@ def handle_message():
                     
                     elif category.lower() == "query":
                         print("🟢 Query detected")
-                        # Handle query-related processing here
+                        mongo_db_query = generate_mongo_query(user_query=user_text, user_id=user_id)
+                        print("mongo_db_query: ",mongo_db_query)
+                        if mongo_db_query:
+                            results = execute_mongo_query(user_id=user_id, mongo_query=mongo_db_query)
+                            print("results: ",results)
+                            response_text = generate_response(user_input=results, context="query_response")
+                            send_whatsapp_text_message(recipient_phone_number=user_id, message_text=response_text)
+                            # return jsonify({"message": "Sucesss"}), 200
+                            return 200
                     
                     return jsonify({"message": response_text}), 200
     
     return "OK", 200
+
+
