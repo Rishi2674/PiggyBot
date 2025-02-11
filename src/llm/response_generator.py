@@ -61,6 +61,7 @@ def generate_response(user_input, context="general",user_name="User"):
                 3. Show totals when possible (e.g., "You spent ₹800 on Food in January").
                 4. Use bullet points for readability if multiple expenses exist.
                 5. Make it time-aware (e.g., "Yesterday", "Last month", "On January 15").
+                6. Also, when user asks for only total amount spent, provide the total amount spent by the user.
 
                 
             User_Name = "{user_name}"
