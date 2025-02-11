@@ -27,6 +27,8 @@ def generate_mongo_query(user_query: str, user_id: str) -> dict:
     "{user_query}"
 
     The query should be formatted as a Python dictionary and should filter results only for this user_id: "{user_id}".
+    The category should be strictly one of the following:
+    ["travel", "food and dining", "shopping", "entertainment", "Utilities and Bills", "Health", "Housing and Rent", "Education", "Investments and Savings", "Miscellaneous"]
     
     The MongoDB collection follows this schema:
     {schema_example}
@@ -58,4 +60,5 @@ def generate_mongo_query(user_query: str, user_id: str) -> dict:
         print("Error generating MongoDB query:", e)
         return {}
 
-mq = generate_mongo_query( "How much have I spent on coffee?", "user123")
+# mq = generate_mongo_query( "How much have I spent this week?", "user123")
+# print(mq)

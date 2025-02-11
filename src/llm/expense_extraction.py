@@ -13,7 +13,7 @@ def extract_expense_details(user_text, user_id):
     The response should be a JSON object matching this schema:
     {{
         "user_id": "{user_id}",
-        "category": "string",  # Category (Food, Travel, Shopping, etc.)
+        "category": "string",  # Category
         "subcategory": "string or null",  # Subcategory (Coffee, Uber, Groceries, etc.)
         "description": "string or null",  # Short description of the expense
         "amount": float,  # Expense amount
@@ -22,23 +22,25 @@ def extract_expense_details(user_text, user_id):
 
     Ensure that:
     - "amount" is extracted as a number (e.g., ₹500 → 500).
-    - "category" is one of Food, Travel, Shopping, Groceries, etc.
+    - "category" is  strictly one of the given list : ["travel", "food and dining", "shopping", "entertainment", "Utilities and Bills", "Health", "Housing and Rent", "Education", "Investments and Savings", "Miscellaneous"]
     - If "subcategory" or "description" cannot be extracted, return null.
     - Date defaults to the current timestamp if not explicitly mentioned.
+    
+    
 
     Example messages and expected JSON:
     
     Message: "Had a filter coffee at a local café, cost ₹50."
-    Output: {{"user_id": "{user_id}", "category": "Food", "subcategory": "Coffee", "description": "Filter coffee at a café", "amount": 50, "date": "{datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')}"}}
+    Output: {{"user_id": "{user_id}", "category": "Food and Dining", "subcategory": "Coffee", "description": "Filter coffee at a café", "amount": 50, "date": "{datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')}"}}
 
     Message: "Booked a train ticket for my trip, cost ₹1200."
     Output: {{"user_id": "{user_id}", "category": "Travel", "subcategory": "Train", "description": "Train ticket", "amount": 1200, "date": "{datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')}"}}
     
     Message: "Bought a cold coffee from CCD for ₹180."
-    Output: {{"user_id": "{user_id}", "category": "Food", "subcategory": "Coffee", "description": "Cold Coffee from CCD", "amount": 180, "date": "{datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')}"}}
+    Output: {{"user_id": "{user_id}", "category": "Food and Dining", "subcategory": "Coffee", "description": "Cold Coffee from CCD", "amount": 180, "date": "{datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')}"}}
     
     Message: "Bought snacks from Blinkit for ₹300 yesterday."
-    Output: {{"user_id": "{user_id}", "category": "Food", "subcategory": "Snacks", "description": "Snacks from Blinkit", "amount": 300, "date": "{datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')}"}}
+    Output: {{"user_id": "{user_id}", "category": "Food and Dining", "subcategory": "Snacks", "description": "Snacks from Blinkit", "amount": 300, "date": "{datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')}"}}
     
     Message: "Took an Ola to work, cost ₹250."
     Output: {{"user_id": "{user_id}", "category": "Travel", "subcategory": "Cab", "description": "Ola ride to work", "amount": 250, "date": "{datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')}"}}
@@ -72,3 +74,5 @@ def extract_expense_details(user_text, user_id):
     #     print("Error communicating with Ollama:", str(e))
     #     return "{}"
 
+
+# data = extract_expense_details("Paid 200rs","919428305030")
