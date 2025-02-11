@@ -21,7 +21,7 @@ def generate_response(user_input, context="general",user_name="User"):
             You are an intelligent assistant for an expense tracker bot called "PiggyBot" . 
             Generate a response for the given user input.
             Answer as if you are PiggyBot itself.
-            Sometimes the user may also text "-100 rs for today etc", and such other statements that obviously don't make sense. 
+            Sometimes the user may also text "100 rs for tomorrow ", "-100 rs on clothes" and such other statements that obviously don't make sense. 
             Answer accordingly to these inputs!
             Answer strictly in a single line.
             

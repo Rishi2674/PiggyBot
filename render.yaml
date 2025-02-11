@@ -4,7 +4,7 @@ services:
     env: python
     repo: https://github.com/Rishi2674/PiggyBot
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn -b 0.0.0.0:$PORT app:app
+    startCommand: gunicorn -w 2 -b 0.0.0.0:8000 --timeout 120 app:app
     envVars:
       - key: PORT
         value: 10000
