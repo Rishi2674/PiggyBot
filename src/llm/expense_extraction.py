@@ -25,6 +25,7 @@ def extract_expense_details(user_text, user_id):
     - "category" is  strictly one of the given list : ["travel", "food and dining", "shopping", "entertainment", "Utilities and Bills", "Health", "Housing and Rent", "Education", "Investments and Savings", "Miscellaneous"]
     - If "subcategory" or "description" cannot be extracted, return null.
     - Date defaults to the current timestamp if not explicitly mentioned.
+    - This is the user id: {user_id}
     
     
 

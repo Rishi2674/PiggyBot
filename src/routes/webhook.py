@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify,Response
 from config.config import VERIFY_TOKEN
 from src.routes.handle_user_message import handle_user_message
+from db.operations import get_or_create_user
 
 
 PROCESSED_MESSAGES = set()
@@ -62,7 +63,11 @@ def handle_message():
                         print("⚠️ Invalid message format received!")
                         return jsonify({"error": "Invalid request"}), 400
                     
+                    
+                    
                     print(f"📩 User {user_name} ({user_id}) sent: {user_text}")
+                    
+                    user = get_or_create_user(user_id=user_id, name=user_name)
                     
                     results = handle_user_message(user_text=user_text, user_id=user_id, user_name=user_name)
                     

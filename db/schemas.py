@@ -21,6 +21,5 @@ class ExpenseSchema(BaseModel):
 class QuerySchema(BaseModel):
     user_id: str
     query_text: str  # The user's raw message
-    intent: str  # Classified intent (e.g., "expense_query", "total_spent")
     response: str  # Generated response
     timestamp: datetime = Field(default_factory=datetime.utcnow)

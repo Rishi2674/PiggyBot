@@ -1,5 +1,6 @@
 import json
-from db.init import expenses_collection
+from db.init import expenses_collection,users_collection
+from db.schemas import UserSchema
 import re
 from db.init import db
 
@@ -71,6 +72,23 @@ def execute_mongo_query(user_id: str, mongo_query: dict):
         print("Error executing MongoDB query:", e)
         return []
 
+
+def get_or_create_user(user_id: str, name = "User"):
+    """Checks if a user exists; if not, creates a new user entry."""
+    
+    user = users_collection.find_one({"user_id": user_id})
+    
+    if user:
+        print(f"✅ User {user_id} exists.")
+        return user  # Return existing user
+    
+    # Create a new user entry
+    new_user = UserSchema(user_id=user_id, name=name).model_dump()
+    users_collection.insert_one(new_user)
+    print(f"🆕 New user {user_id} added to the database.")
+    
+    return new_user  # Return newly inserted user
+
 # def test():
 #     print("🔍 Fetching all expenses for user 919428305030...")
 #     all_expenses = list(expenses_collection.find({"user_id": "919428305030"}))
@@ -82,3 +100,5 @@ def execute_mongo_query(user_id: str, mongo_query: dict):
 #     print("🔍 Query Results:", results)
 
 # test()
+
+# user = get_or_create_user("929428305030","Rishi Upadhyay")
