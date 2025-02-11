@@ -16,7 +16,10 @@ def classify_message(user_text):
     Classify the given message into one of the following categories:
     - 'Expense' if the message describes an expense (e.g., "I spent Rs.10 on coffee").
     - 'Query' if the message asks about expenses (e.g., "How much did I spend this week?").
-    - 'Other' if the message is strictly not related to expenses or queries and is a general message.
+    - 'Other' in the following cases:
+        1. if the message is strictly not related to expenses or queries and is a general message.
+        2. If the user asks to store or retrieve expenses with negative value
+        3. If the user queries something which is not possible , eg. "How much did I spend tomorrow?" etc.
     
     Message: "{user_text}"
     

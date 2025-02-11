@@ -20,6 +20,7 @@ def generate_response(user_input, context="general",user_name="User"):
             prompt = f"""
             You are an intelligent assistant for an expense tracker bot called "PiggyBot" . 
             Generate a response for the given user input.
+            Answer as if you are PiggyBot itself.
             Answer strictly in a single line.
             
             Message: "{user_input}"
