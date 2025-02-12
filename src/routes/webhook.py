@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify,Response
 from config.config import VERIFY_TOKEN
 from src.routes.handle_user_message import handle_user_message
 from db.operations import get_or_create_user
+from src.routes.voice_to_text import whatsapp_audio_to_text
 
 
 PROCESSED_MESSAGES = set()
@@ -68,8 +69,8 @@ def handle_message():
                         media_id = message["audio"]["id"]  # Get media ID
                         print(f"🎙️ User {user_name} ({user_id}) sent a voice message.")
                         print("media id: ", media_id)
-                        # user_text = convert_voice_to_text(media_id)  # Convert to text
-                        # print(f"📝 Transcribed text: {user_text}")
+                        user_text = whatsapp_audio_to_text(media_id)  # Convert to text
+                        print(f"📝 Transcribed text: {user_text}")
 
                     if not user_text or not user_id:
                         print("⚠️ Invalid message format received!")
