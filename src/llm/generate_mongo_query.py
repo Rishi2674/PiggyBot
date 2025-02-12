@@ -60,5 +60,5 @@ def generate_mongo_query(user_query: str, user_id: str) -> dict:
         print("Error generating MongoDB query:", e)
         return {}
 
-# mq = generate_mongo_query( "How much have I spent this week?", "user123")
+# mq = generate_mongo_query( "How much have total amount I have spent this week?", "user123")
 # print(mq)
