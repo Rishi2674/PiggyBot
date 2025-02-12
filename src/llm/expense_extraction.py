@@ -42,8 +42,8 @@ def extract_expense_details(user_text, user_id):
                 {{
                     "user_id": "{user_id}",
                     "category": "string",  # Category
-                    "subcategory": "string or null",  # Subcategory (Coffee, Uber, Groceries, etc.)
-                    "description": "string or null",  # Short description of the expense
+                    "subcategory": "string or None",  # Subcategory (Coffee, Uber, Groceries, etc.)
+                    "description": "string or None",  # Short description of the expense
                     "amount": float,  # Expense amount
                     "date": "{datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')}",  # Date of expense in ISO format
                 }}
@@ -77,6 +77,8 @@ def extract_expense_details(user_text, user_id):
                 Message: "{user_text}"
                 Output:
                 """
+                
+            prompt2 = "Hi! How are you doing?"
 
             response = client.models.generate_content(
                 model="gemini-2.0-flash",

@@ -79,6 +79,6 @@ def classify_message(user_text):
     return "Other"
 
 # Example Usage
-message = "How much was the cost of today?"
-category = classify_message(message)
-print(f"📌 Message category: {category}")
+# message = "How much was the cost of today?"
+# category = classify_message(message)
+# print(f"📌 Message category: {category}")

@@ -98,7 +98,7 @@ def generate_response(user_input, context="general",user_name="User"):
                 Query result : 
                 {user_input}
                 """
-            
+                prompt2 = "Hey! how are you doing? how is your day?"
             response = client.models.generate_content(
                 model="gemini-2.0-flash",
                 contents=prompt,
@@ -117,7 +117,7 @@ def generate_response(user_input, context="general",user_name="User"):
                     time.sleep(2 ** attempt)  # Exponential backoff
                 else:
                     print("❌ All API keys exhausted. Try again later.")
-                    return "Other"
+                    return "API limit exhausted, please try again later!"
             else:
                 return "Other"
 

@@ -68,7 +68,7 @@ def generate_mongo_query(user_query: str, user_id: str) -> dict:
                 No need to give any explanation or import any libraries, just give the MongoDB query.
                 """
 
-
+            prompt2 = "Hey! How was your day today"
             response = client.models.generate_content(
                 model="gemini-2.0-flash",
                 contents=prompt,

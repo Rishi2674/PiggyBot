@@ -7,11 +7,14 @@ from src.routes.voice_to_text import whatsapp_audio_to_text
 
 PROCESSED_MESSAGES = set()
 
-webhook_bp = Blueprint("webhook", __name__)
+# webhook_bp = Blueprint("webhook", __name__)
 
-@webhook_bp.route("/", methods=["GET"])
+
+
+# @webhook_bp.route("/", methods=["GET"])
 def verify_webhook():
     """Handles the webhook verification process"""
+    print("GET:",request)
     mode = request.args.get("hub.mode")
     token = request.args.get("hub.verify_token")
     challenge = request.args.get("hub.challenge")
@@ -23,8 +26,9 @@ def verify_webhook():
     else:
         return "Forbidden", 403
 
-@webhook_bp.route("/", methods=["POST"])
-def handle_message():
+# @webhook_bp.route("/", methods=["POST"])
+def handle_message(request):
+    print("POST: ",request)
     """Handles incoming WhatsApp messages (Text & Audio)."""
     data = request.get_json()
     
