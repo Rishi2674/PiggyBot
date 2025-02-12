@@ -1,83 +1,84 @@
-import ollama
-# import requests
+import time
 from google import genai
-# import time
-from config.config import GEMINI_API_KEY_1
+from config.config import GEMINI_API_KEY_1,GEMINI_API_KEY_2,GEMINI_API_KEY_3  # List of API keys
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
+API_KEYS = [GEMINI_API_KEY_1,GEMINI_API_KEY_2,GEMINI_API_KEY_3]  # List of multiple API keys
+KEY_INDEX = 0  # Start with the first API key
 
+# Track API call timestamps
+api_call_timestamps = []
 
 def classify_message(user_text):
-    print("in classification messsages")
-    client = genai.Client(api_key=GEMINI_API_KEY_1)
-
-    prompt = f"""
-    You are an intelligent assistant for an expense tracker bot. 
-    Classify the given message into one of the following categories:
-    - 'Expense' if the message describes an expense (e.g., "I spent Rs.10 on coffee").
-    - 'Query' if the message asks about expenses (e.g., "How much did I spend this week?").
-    - 'Other' in the following cases:
-        1. if the message is strictly not related to expenses or queries and is a general message.
-        2. If the user asks to store or retrieve expenses with negative value
-        3. If the user queries something which is not possible , eg. "How much did I spend tomorrow?" etc.
+    """Classifies a user message into 'Expense', 'Query', or 'Other'."""
     
-    Message: "{user_text}"
     
-    Respond ONLY with 'Expense' or 'Query'. NO explanations, NO extra text.
-    """
+    global KEY_INDEX, api_call_timestamps
 
-    # payload = {
-    #     "model": "phi3",
-    #     "prompt": prompt,
-    #     "stream": False,
-    #     "options": {
-    #         "temperature": 0,
-    #         "max_tokens": 15,
-    #     }
-    # }
-    
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt,
-        )
-    print("classification output: ",response.text)
-    return response.text.strip().split("\n")[0]
+    print("🔍 Classifying message...")
 
-    # print(response.text)
-    # response = ollama.generate(
-    #     model="phi3",
-    #     prompt=prompt,
-    #     options={
-    #         "temperature": 0,
-    #         "max_tokens": 1,
-    #         "num_ctx": 512,
-    #         "num_gqa": 1
-    #     }
-    # )
-    
-    # return response["response"].strip().split()[0]   
+    # Clean up old timestamps (keep only requests in the last 60 sec)
+    current_time = time.time()
+    api_call_timestamps = [t for t in api_call_timestamps if current_time - t < 60]
 
-    # try:
-    #     response = requests.post(OLLAMA_URL, json=payload)
-    #     print("response: ", response)
-    #     response_json = response.json()
-    #     classified_intent = response_json.get("response", "").strip()
-    #     print("classified intent: ", classified_intent)
-    #     print("---------------Done------------------")
-    #     if classified_intent not in ["Expense", "Query"]:
-    #         return "Unknown"
+    # If we've hit the 10 requests/min limit, wait
+    if len(api_call_timestamps) >= 10:
+        wait_time = 60 - (current_time - api_call_timestamps[0])
+        print(f"🚨 Rate limit exceeded! Waiting {int(wait_time)} seconds...")
+        time.sleep(wait_time)
 
-    #     return classified_intent
+    retries = 3
+    for attempt in range(retries):
+        api_key = API_KEYS[KEY_INDEX]
+        client = genai.Client(api_key = api_key)
 
-    # except Exception as e:
-    #     print("Error communicating with Ollama:", str(e))
-    #     return "Error"
+        try:
+            # client = genai.GenerativeModel("gemini-2.0-flash")
+            
+            prompt = f"""
+            You are an intelligent assistant for an expense tracker bot. 
+            Classify the given message into one of the following categories:
+            - 'Expense' if the message describes an expense (e.g., "I spent Rs.10 on coffee").
+            - 'Query' if the message asks about expenses (e.g., "How much did I spend this week?").
+            - 'Other' in the following cases:
+                1. If the message is strictly not related to expenses or queries.
+                2. If the user asks to store or retrieve expenses with negative values.
+                3. If the user queries something that is not possible (e.g., "How much did I spend tomorrow?").
 
-# import time
+            Message: "{user_text}"
 
-# start = time.time()
-# response = classify_message("What was my expense last week?")
-# end = time.time()
+            Respond ONLY with 'Expense', 'Query', or 'Other'. NO explanations, NO extra text.
+            """
 
-# print("Response:", response)
-# print("Time taken:", end - start, "seconds")
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=prompt,
+                )
+
+            if response.text:
+                api_call_timestamps.append(time.time())  # Log request time
+                classification = response.text.strip().split("\n")[0]
+                print("✅ Classification output:", classification)
+                return classification  
+
+        except Exception as e:
+            error_message = str(e)
+            print(f"❌ Error: {error_message}")
+
+            if "RESOURCE_EXHAUSTED" in error_message:
+                print("⚠️ Rate limit hit. Switching API keys or waiting...")
+                KEY_INDEX = (KEY_INDEX + 1) % len(API_KEYS)
+
+                if attempt < retries - 1:
+                    time.sleep(2 ** attempt)  # Exponential backoff
+                else:
+                    print("❌ All API keys exhausted. Try again later.")
+                    return "Other"
+            else:
+                return "Other"
+
+    return "Other"
+
+# Example Usage
+message = "How much was the cost of today?"
+category = classify_message(message)
+print(f"📌 Message category: {category}")
