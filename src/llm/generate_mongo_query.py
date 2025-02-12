@@ -1,11 +1,11 @@
 from datetime import datetime
 from google import genai
-from config.config import GEMINI_API_KEY
+from config.config import GEMINI_API_KEY_3
 import re
 
 def generate_mongo_query(user_query: str, user_id: str) -> dict:
     
-    client  = genai.Client(api_key = GEMINI_API_KEY)
+    client  = genai.Client(api_key = GEMINI_API_KEY_3)
     
     """
     Uses Gemini API to convert a natural language user query into a MongoDB query.

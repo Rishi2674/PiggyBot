@@ -1,5 +1,5 @@
 from google import genai
-from config.config import GEMINI_API_KEY
+from config.config import GEMINI_API_KEY_1
 import json
 
 def generate_response(user_input, context="general",user_name="User"):
@@ -13,7 +13,7 @@ def generate_response(user_input, context="general",user_name="User"):
     Returns:
         str: The response from the Gemini API.
     """
-    client = genai.Client(api_key = GEMINI_API_KEY)
+    client = genai.Client(api_key = GEMINI_API_KEY_1)
     try:
         prompt = ""
         if context == "general":

@@ -1,12 +1,12 @@
 import requests
 from datetime import datetime
 from google import genai
-from config.config import GEMINI_API_KEY
+from config.config import GEMINI_API_KEY_2
 # OLLAMA_URL = "http://localhost:11434/api/generate"
 
 def extract_expense_details(user_text, user_id):
     print("in extract_expense_details")
-    client = genai.Client(api_key=GEMINI_API_KEY)
+    client = genai.Client(api_key=GEMINI_API_KEY_2)
     prompt = f"""
     You are an intelligent assistant for an expense tracker bot. Extract structured expense details from the given message.
     

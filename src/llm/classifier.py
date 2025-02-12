@@ -2,14 +2,14 @@ import ollama
 # import requests
 from google import genai
 # import time
-from config.config import GEMINI_API_KEY
+from config.config import GEMINI_API_KEY_1
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 
 
 def classify_message(user_text):
     print("in classification messsages")
-    client = genai.Client(api_key=GEMINI_API_KEY)
+    client = genai.Client(api_key=GEMINI_API_KEY_1)
 
     prompt = f"""
     You are an intelligent assistant for an expense tracker bot. 
