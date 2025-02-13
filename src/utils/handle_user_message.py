@@ -1,5 +1,6 @@
 from src.llm.response_generator import generate_response
 from src.utils.whatsapp_sender import send_whatsapp_text_message
+from src.utils.process_query import process_expense_query_results,format_query_for_llm
 from src.llm.generate_mongo_query import generate_mongo_query
 from src.llm.classifier import classify_message
 from src.llm.expense_extraction import extract_expense_details
@@ -39,8 +40,10 @@ def handle_user_message(user_text, user_id,user_name="User"):
         
         results = execute_mongo_query(user_id=user_id, mongo_query=mongo_db_query)
         # print("Query Results:", results)
-        
-        response_text = generate_response(user_input=results, context="query_response",user_name=user_name)
+        summary = process_expense_query_results(results)
+        summary,response_text = format_query_for_llm(user_name=user_name, expense_summary=summary)
+        """If we want more personalised replies"""
+        # response_text = generate_response(user_input=prompt, context="query_response",user_name=user_name)
         send_whatsapp_text_message(user_id, response_text)
         return jsonify({"message": "Success"}), 200
     
