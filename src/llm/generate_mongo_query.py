@@ -75,7 +75,8 @@ def generate_mongo_query(user_query: str, user_id: str) -> dict:
                     - `$or` when querying multiple keywords in descriptions (e.g., `"uber"` or `"ola"`).  
                     - `$and` when combining filters (e.g., category + date range + keyword in description).  
                     5. **Ensure the query is syntactically correct** and uses MongoDB operators properly.
-                    6. **No need to give any explanation or import any libraries**, just return the MongoDB query.
+                    6. Always use lowercase for queries, because data is stored in lowercase itself.
+                    7. **No need to give any explanation or import any libraries**, just return the MongoDB query.
 
                     ### **Example Queries and Expected Output:**
                     - **"How much did I spend on Starbucks?"**  
@@ -116,6 +117,6 @@ def generate_mongo_query(user_query: str, user_id: str) -> dict:
     return "Other"
 
 # Example Usage
-message = "How much did I spend on buying a new vest?"
-mq = generate_mongo_query(message,user_id="919428305030")
-print(f"📌 Mongo query: {mq}")
+# message = "How much did I spend on buying a new vest?"
+# mq = generate_mongo_query(message,user_id="919428305030")
+# print(f"📌 Mongo query: {mq}")

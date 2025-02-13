@@ -109,6 +109,6 @@ def extract_expense_details(user_text, user_id):
     return "Other"
 
 # Example Usage
-message = "Spend 200 on Pani Puri!"
-data = extract_expense_details(message,"user123")
-print(f"📌 Message details: {data}")
+# message = "Spend 200 on Pani Puri!"
+# data = extract_expense_details(message,"user123")
+# print(f"📌 Message details: {data}")
