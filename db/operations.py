@@ -32,7 +32,7 @@ def store_expense(expense_data):
         # print("in try")
         expense_data["category"] = (expense_data["category"].lower() if expense_data["category"] is not None else "miscellaneous")
 
-        expense_data["subcategory"] = (expense_data["subcategory"].lower() if expense_data["subcategory"] is not None else "miscellaneous")
+        # expense_data["subcategory"] = (expense_data["subcategory"].lower() if expense_data["subcategory"] is not None else "miscellaneous")
         expense_data["description"] = (expense_data["subcategory"].lower() if expense_data["description"] is not None else "miscellaneous")
 
         result =  expenses_collection.insert_one(expense_data)
