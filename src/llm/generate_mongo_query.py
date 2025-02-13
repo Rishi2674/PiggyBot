@@ -22,11 +22,12 @@ def generate_mongo_query(user_query: str, user_id: str) -> dict:
     schema_example = {
         "user_id": user_id,
         "category": "string",
-        "subcategory": "string",
         "description": "string",
         "amount": "float",
         "date": "datetime (ISO 8601 format)"
     }
+    
+    output1 = { "description": { "$regex": "starbucks", "$options": "i" }, "user_id": user_id }
 
     
     
@@ -53,22 +54,36 @@ def generate_mongo_query(user_query: str, user_id: str) -> dict:
             # client = genai.GenerativeModel("gemini-2.0-flash")
             
             prompt = f"""
-                Convert the following user query into a valid MongoDB query:
-                "{user_query}"
+                    Convert the following user query into a valid MongoDB query:
+                    "{user_query}"
 
-                The query should be formatted as a Python dictionary and should filter results only for this user_id: "{user_id}".
-                The category should be strictly one of the following:
-                ["travel", "food and dining", "shopping", "entertainment", "Utilities and Bills", "Health", "Housing and Rent", "Education", "Investments and Savings", "Miscellaneous"]
-                
-                The MongoDB collection follows this schema:
-                {schema_example}
+                    The query should be formatted as a Python dictionary and should filter results only for this user_id: "{user_id}".  
+                    The category should be strictly one of the following:
+                    ["travel", "food and dining", "shopping", "entertainment", "Utilities and Bills", "Health", "Housing and Rent", "Education", "Investments and Savings", "Miscellaneous"]
 
-                Use the current datetime for time-based queries: {current_time}.
-                Ensure the query is valid and uses MongoDB operators like $gte, $lte for date filtering if needed.
-                No need to give any explanation or import any libraries, just give the MongoDB query.
-                """
+                    The MongoDB collection follows this schema:
+                    {schema_example}
+
+                    Use the current datetime for time-based queries: {current_time}.  
+                    User id is : {user_id}
+
+                    ### **Query Requirements:**
+                    1. **For category-based filtering** → Use direct matching (`"category": "<category_name>"`).
+                    2. **For description-based filtering** → Use `$regex` with case-insensitive matching (`$options: "i"`).
+                    3. **For time-based filtering** → Use `$gte` and `$lte` for date ranges when applicable.
+                    4. **For multiple conditions**, intelligently use:
+                    - `$or` when querying multiple keywords in descriptions (e.g., `"uber"` or `"ola"`).  
+                    - `$and` when combining filters (e.g., category + date range + keyword in description).  
+                    5. **Ensure the query is syntactically correct** and uses MongoDB operators properly.
+                    6. **No need to give any explanation or import any libraries**, just return the MongoDB query.
+
+                    ### **Example Queries and Expected Output:**
+                    - **"How much did I spend on Starbucks?"**  
+                    Output: {output1}    
+                    """
 
             prompt2 = "Hey! How was your day today"
+            # prompt = prompt.format(user_query=user_query,schema_example = schema_example, current_time = current_time, user_id=user_id)
             response = client.models.generate_content(
                 model="gemini-2.0-flash",
                 contents=prompt,
@@ -101,6 +116,6 @@ def generate_mongo_query(user_query: str, user_id: str) -> dict:
     return "Other"
 
 # Example Usage
-# message = "How much was the cost on travel of today?"
-# mq = generate_mongo_query(message,user_id="1234")
-# print(f"📌 Mongo query: {mq}")
+message = "How much did I spend on buying a new vest?"
+mq = generate_mongo_query(message,user_id="919428305030")
+print(f"📌 Mongo query: {mq}")

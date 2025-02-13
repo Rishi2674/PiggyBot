@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify,Response
 from config.config import VERIFY_TOKEN
-from src.routes.handle_user_message import handle_user_message
+from src.utils.handle_user_message import handle_user_message
 from db.operations import get_or_create_user
-from src.routes.voice_to_text import whatsapp_audio_to_text
+from src.utils.voice_to_text import whatsapp_audio_to_text
 
 
 PROCESSED_MESSAGES = set()

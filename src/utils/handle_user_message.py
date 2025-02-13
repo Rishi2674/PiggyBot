@@ -1,5 +1,5 @@
 from src.llm.response_generator import generate_response
-from src.routes.whatsapp_sender import send_whatsapp_text_message
+from src.utils.whatsapp_sender import send_whatsapp_text_message
 from src.llm.generate_mongo_query import generate_mongo_query
 from src.llm.classifier import classify_message
 from src.llm.expense_extraction import extract_expense_details

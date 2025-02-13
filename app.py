@@ -1,5 +1,5 @@
 # from flask import Flask
-from src.routes.webhook import handle_message 
+from src.utils.webhook import handle_message 
 # from db.init import db
 
 # def create_app():
