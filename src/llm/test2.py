@@ -50,7 +50,7 @@ def generate_mongo_query(user_query: str, user_id: str) -> dict:
         client = genai.Client(api_key = api_key)
 
         try:
-            # client = genai.GenerativeModel("gemini-2.0-flash")
+            # client = genai.GenerativeModel("gemini-2.0-flash-lite-preview-02-05")
             
             prompt = f"""
                 Convert the following user query into a valid MongoDB query:
@@ -70,7 +70,7 @@ def generate_mongo_query(user_query: str, user_id: str) -> dict:
 
             prompt2 = "Hey! How was your day today"
             response = client.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-2.0-flash-lite-preview-02-05",
                 contents=prompt,
                 )
 

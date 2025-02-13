@@ -101,7 +101,7 @@ def generate_response(user_input, context="general",user_name="User"):
                 """
                 prompt2 = "Hey! how are you doing? how is your day?"
             response = client.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-2.0-flash-lite-preview-02-05",
                 contents=prompt,
                 )
             # print(response.text)

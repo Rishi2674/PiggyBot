@@ -12,6 +12,7 @@ GEMINI_API_KEY_2 = os.getenv("GEMINI_API_2", "gemini_api_key_2")
 GEMINI_API_KEY_3 = os.getenv("GEMINI_API_3", "gemini_api_key_3")
 WHATSAPP_API_KEY = os.getenv("WHATSAPP_API_KEY", "whatsapp_api_key")
 PHONE_NUMBER_ID = os.getenv("PHONE_NUMBER_ID", "phone number id")
+OPENAI_API_KEY = os.getenv("OPEN_AI_KEY","open_ai_api")
 
 # print("Phone number id: ", PHONE_NUMBER_ID)
 

@@ -1,114 +1,90 @@
 import time
-from google import genai
+from openai import OpenAI
 from datetime import datetime
-from config.config import GEMINI_API_KEY_1,GEMINI_API_KEY_2,GEMINI_API_KEY_3  # List of API keys
+from config.config import OPENAI_API_KEY  # Your OpenAI API Key
 
-API_KEYS = [GEMINI_API_KEY_1,GEMINI_API_KEY_2,GEMINI_API_KEY_3]  # List of multiple API keys
-KEY_INDEX = 0  # Start with the first API key
-
-# Track API call timestamps
+# Track API call timestamps for rate limiting
 api_call_timestamps = []
 
 def extract_expense_details(user_text, user_id):
-    """Classifies a user message into 'Expense', 'Query', or 'Other'."""
+    """Classifies a user message into structured expense details."""
     
     schema = {
-                "user_id": "{user_id}",
-                "category": "string",  # Strictly one of the predefined categories
-                "description": "string",  # Key details about the expense
-                "amount": float,  # Extracted numerical value of expense
-                "date": "{datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')}"  # ISO format date
-            }
-    global KEY_INDEX, api_call_timestamps
-
-    print("🔍 extracting expense Details...")
-
+        "user_id": user_id,
+        "category": "string",  # Strictly one of the predefined categories
+        "description": "string",  # Key details about the expense
+        "amount": float,  # Extracted numerical value of expense
+        "date": datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')  # ISO format date
+    }
+    
+    print("🔍 Extracting expense details...")
+    
     # Clean up old timestamps (keep only requests in the last 60 sec)
     current_time = time.time()
+    global api_call_timestamps
     api_call_timestamps = [t for t in api_call_timestamps if current_time - t < 60]
 
-    # If we've hit the 10 requests/min limit, wait
+    # If we've hit the rate limit, wait
     if len(api_call_timestamps) >= 10:
         wait_time = 60 - (current_time - api_call_timestamps[0])
         print(f"🚨 Rate limit exceeded! Waiting {int(wait_time)} seconds...")
         time.sleep(wait_time)
 
-    retries = 3
-    for attempt in range(retries):
-        api_key = API_KEYS[KEY_INDEX]
-        client = genai.Client(api_key = api_key)
+    prompt = f"""
+        You are an intelligent assistant for an expense tracker bot. Extract structured expense details from the given message.
 
-        try:
-            # client = genai.GenerativeModel("gemini-2.0-flash")
-            
-            prompt = f"""
-                    You are an intelligent assistant for an expense tracker bot. Extract structured expense details from the given message.
+        ### Expected JSON Schema:
+        {schema}
 
-                    The response should be a JSON object matching this schema:
-                    {schema}
+        ### Constraints:
+        - Extract the "amount" as a number (₹500 → 500).
+        - "Category" must be one of: ["travel", "food and dining", "shopping", "entertainment", "Utilities and Bills", "Health", "Housing and Rent", "Education", "Investments and Savings", "Miscellaneous"].
+        - "Description" should summarize key details (e.g., "Starbucks coffee", "Train ticket").
+        - If the date is missing, default to the current timestamp.
+        - Extract brand/store names if mentioned.
+        - User ID: {user_id}
 
-                    Ensure that:
-                    - "amount" is extracted as a number (e.g., ₹500 → 500).
-                    - "category" is strictly one of: ["travel", "food and dining", "shopping", "entertainment", "Utilities and Bills", "Health", "Housing and Rent", "Education", "Investments and Savings", "Miscellaneous"].
-                    - "description" should summarize the key details (e.g., "Starbucks coffee", "Train ticket", "Snacks from Blinkit").
-                    - If the date is not explicitly mentioned, default to the current timestamp.
-                    - Extract brand/store names if available (e.g., "Starbucks", "Blinkit").
-                    - This is the user id: {user_id}
+        ### Examples:
 
-                    ### Example messages and expected JSON:
+        1. **Input:** "Had a filter coffee at a local café, cost ₹50."
+        **Output:** {{"user_id": "{user_id}", "category": "Food and Dining", "description": "Filter coffee at local café", "amount": 50, "date": "{datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')}"}}
 
-                    Message: "Had a filter coffee at a local café, cost ₹50."
-                    Output: {{"user_id": "{user_id}", "category": "Food and Dining", "description": "Filter coffee at local café", "amount": 50, "date": "{datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')}"}}
+        2. **Input:** "Took an Ola to work, cost ₹250."
+        **Output:** {{"user_id": "{user_id}", "category": "Travel", "description": "Ola ride to work", "amount": 250, "date": "{datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')}"}}
 
-                    Message: "Booked a train ticket for my trip, cost ₹1200."
-                    Output: {{"user_id": "{user_id}", "category": "Travel", "description": "Train ticket", "amount": 1200, "date": "{datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')}"}}
+        **Now process this message:**
+        "{user_text}"
+    """
 
-                    Message: "Bought a cold coffee from CCD for ₹180."
-                    Output: {{"user_id": "{user_id}", "category": "Food and Dining", "description": "Cold coffee from CCD", "amount": 180, "date": "{datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')}"}}
+    try:
+        print("in try block")
+        client = OpenAI(
+            api_key = OPENAI_API_KEY
+        )
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "system", "content": "You are a helpful assistant."},
+                      {"role": "user", "content": prompt}],
+            )
+        print(response)
+        print(response.choices)
+        if response and hasattr(response,'choices') and len(response.choices) > 0:
+            print("in response")
+            api_call_timestamps.append(time.time())  # Log request time
+            extracted_details = response.choices[0].message.content.strip()
+            print("✅ Extracted Details:", extracted_details)
+            return extracted_details
 
-                    Message: "Bought snacks from Blinkit for ₹300 yesterday."
-                    Output: {{"user_id": "{user_id}", "category": "Food and Dining", "description": "Snacks from Blinkit", "amount": 300, "date": "{datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')}"}}
+    except OpenAI.error.OpenAIError as e:
+        print(f"❌ OpenAI API Error: {str(e)}")
+        return "OpenAI error"
+    except Exception as e:
+        print(f"❌ Unexpected Error: {str(e)}")
+        return "Other"
 
-                    Message: "Took an Ola to work, cost ₹250."
-                    Output: {{"user_id": "{user_id}", "category": "Travel", "description": "Ola ride to work", "amount": 250, "date": "{datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')}"}}
-
-                    Message: "{user_text}"
-                    Output:
-                    """
-
-                
-            prompt2 = "Hi! How are you doing?"
-
-            response = client.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=prompt,
-                )
-
-            if response.text:
-                api_call_timestamps.append(time.time())  # Log request time
-                # classification = response.text.strip().split("\n")[0]
-                print("✅ Extracted Details:", response.text)
-                return response.text  
-
-        except Exception as e:
-            error_message = str(e)
-            print(f"❌ Error: {error_message}")
-
-            if "RESOURCE_EXHAUSTED" in error_message:
-                print("⚠️ Rate limit hit. Switching API keys or waiting...")
-                KEY_INDEX = (KEY_INDEX + 1) % len(API_KEYS)
-
-                if attempt < retries - 1:
-                    time.sleep(2 ** attempt)  # Exponential backoff
-                else:
-                    print("❌ All API keys exhausted. Try again later.")
-                    return "Other"
-            else:
-                return "Other"
-
-    return "Other"
+    return "Hello"
 
 # Example Usage
-# message = "Spend 200 on Pani Puri!"
-# data = extract_expense_details(message,"user123")
+# message = "Spent 200 on Pani Puri!"
+# data = extract_expense_details(message, "user123")
 # print(f"📌 Message details: {data}")

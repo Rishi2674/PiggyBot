@@ -1,18 +1,17 @@
 import time
-from google import genai
-from config.config import GEMINI_API_KEY_1,GEMINI_API_KEY_2,GEMINI_API_KEY_3  # List of API keys
+from openai import OpenAI
+from config.config import OPENAI_API_KEY  # Import your single OpenAI API key
 
-API_KEYS = [GEMINI_API_KEY_1,GEMINI_API_KEY_2,GEMINI_API_KEY_3]  # List of multiple API keys
-KEY_INDEX = 0  # Start with the first API key
+# Set OpenAI API ke 
 
 # Track API call timestamps
 api_call_timestamps = []
 
+
 def classify_message(user_text):
-    """Classifies a user message into 'Expense', 'Query', or 'Other'."""
-    
-    
-    global KEY_INDEX, api_call_timestamps
+    """Classifies a user message into 'Expense', 'Query', or 'Other' using OpenAI's API."""
+
+    global api_call_timestamps
 
     print("🔍 Classifying message...")
 
@@ -28,12 +27,7 @@ def classify_message(user_text):
 
     retries = 3
     for attempt in range(retries):
-        api_key = API_KEYS[KEY_INDEX]
-        client = genai.Client(api_key = api_key)
-
         try:
-            # client = genai.GenerativeModel("gemini-2.0-flash")
-            
             prompt = f"""
             You are an intelligent assistant for an expense tracker bot. 
             Classify the given message into one of the following categories:
@@ -49,36 +43,40 @@ def classify_message(user_text):
             Respond ONLY with 'Expense', 'Query', or 'Other'. NO explanations, NO extra text.
             """
 
-            response = client.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=prompt,
+            client = OpenAI(
+                api_key = OPENAI_API_KEY
+            )
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "system", "content": "You are a helpful assistant."},
+                        {"role": "user", "content": prompt}],
                 )
 
-            if response.text:
+            if response and hasattr(response,'choices') and len(response.choices) > 0:
+                print("in response")
                 api_call_timestamps.append(time.time())  # Log request time
-                classification = response.text.strip().split("\n")[0]
-                print("✅ Classification output:", classification)
-                return classification  
+                classification = response.choices[0].message.content.strip()
+                classification = classification.split("\n")[0]                
 
-        except Exception as e:
-            error_message = str(e)
-            print(f"❌ Error: {error_message}")
-
-            if "RESOURCE_EXHAUSTED" in error_message:
-                print("⚠️ Rate limit hit. Switching API keys or waiting...")
-                KEY_INDEX = (KEY_INDEX + 1) % len(API_KEYS)
-
-                if attempt < retries - 1:
-                    time.sleep(2 ** attempt)  # Exponential backoff
-                else:
-                    print("❌ All API keys exhausted. Try again later.")
+                if classification not in ["Expense", "Query", "Other"]:
+                    print("⚠️ Unexpected response, defaulting to 'Other'.")
                     return "Other"
-            else:
-                return "Other"
 
+                print("✅ Classification output:", classification)
+                return classification
+
+        except OpenAI.error.RateLimitError:
+            print("⚠️ Rate limit hit. Waiting before retrying...")
+            time.sleep(2 ** attempt)  # Exponential backoff
+        except Exception as e:
+            print(f"❌ Error: {e}")
+            return "Other"
+
+    print("❌ Max retries reached. Returning 'Other'.")
     return "Other"
 
+
 # Example Usage
-# message = "How much was the cost of today?"
-# category = classify_message(message)
-# print(f"📌 Message category: {category}")
+message = "How much was the cost of today?"
+category = classify_message(message)
+print(f"📌 Message category: {category}")

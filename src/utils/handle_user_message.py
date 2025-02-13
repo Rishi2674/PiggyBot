@@ -47,7 +47,7 @@ def handle_user_message(user_text, user_id,user_name="User"):
         send_whatsapp_text_message(user_id, response_text)
         return jsonify({"message": "Success"}), 200
     
-    elif category.lower == "Other":  # Handles "none" or any unclassified messages
+    elif category.lower() == "other":  # Handles "none" or any unclassified messages
         response_text = generate_response(user_input=user_text, context="general",user_name=user_name)
         send_whatsapp_text_message(user_id, response_text)
         return jsonify({"message": "Normal message sent"}), 200

@@ -50,4 +50,4 @@ def webhook():
         return handle_message(request)
 
 if __name__ == "__main__":
-    app.run(port=5000, debug=True)
+    app.run(port=5000, debug=True,use_reloader=False)
