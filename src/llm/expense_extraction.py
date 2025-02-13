@@ -54,8 +54,6 @@ def extract_expense_details(user_text, user_id):
                 - If "subcategory" or "description" cannot be extracted, return null.
                 - Date defaults to the current timestamp if not explicitly mentioned.
                 - This is the user id: {user_id}
-                
-                
 
                 Example messages and expected JSON:
                 

@@ -12,7 +12,7 @@ class UserSchema(BaseModel):
 class ExpenseSchema(BaseModel):
     user_id: str
     category: str
-    subcategory: Optional[str] = None  # Now optional
+    # subcategory: Optional[str] = None  # Now optional
     description: Optional[str] = None  # Now optional
     amount: float
     date: datetime = Field(default_factory=datetime.utcnow)
